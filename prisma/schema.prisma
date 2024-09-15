@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id               Int         @id @default(autoincrement())
+  nombre_completo  String
+  nombre_comercial String?
+  razon_social     String?
+  identificacion   String
+  telefono         String
+  correo           String
+  password         String
+  direccion        String
+  departamento     String?
+  ciudad           String?
+  cultivos         Cultivo[]   @relation("UsuarioCultivos")
+  fincas           Finca[]     @relation("UsuarioFincas")
+  estado           Boolean     @default(true)
+  roles            UsuarioRol[]
+}
+
+model Rol {
+  id           Int         @id @default(autoincrement())
+  nombre       String      @unique
+  permisos     Permiso[]   @relation("RolPermisos")
+  usuarios     UsuarioRol[]
+}
+
+model UsuarioRol {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  rolId     Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  rol       Rol     @relation(fields: [rolId], references: [id])
+  @@unique([usuarioId, rolId])
+}
+
+model Permiso {
+  id           Int         @id @default(autoincrement())
+  nombre       String      @unique
+  rol          Rol         @relation("RolPermisos", fields: [rolId], references: [id])
+  rolId        Int
+  menuItem     MenuItem    @relation("MenuItemPermisos", fields: [menuItemId], references: [id])
+  menuItemId   Int
+}
+
+model MenuItem {
+  id           Int         @id @default(autoincrement())
+  nombre       String     @unique
+  url          String
+  orden        Int
+  estado       Boolean     @default(true)
+  permisos     Permiso[]   @relation("MenuItemPermisos")
+}
+
+model Cultivo {
+  id                 Int         @id @default(autoincrement())
+  nombre             String
+  fecha_inicio       DateTime
+  fecha_finalizacion DateTime
+  proyeccion         String
+  cantidad           String
+  descripcion_corta  String
+  descripcion_larga  String
+  categoria          String
+  usuarioId          Int
+  fincaId            Int
+  usuario            Usuario     @relation("UsuarioCultivos", fields: [usuarioId], references: [id])
+  finca              Finca       @relation("FincaCultivos", fields: [fincaId], references: [id])
+  imagenes           Imagen[]    @relation("CultivoImagenes")
+  estado             Boolean     @default(true)
+}
+
+model Finca {
+  id           Int        @id @default(autoincrement())
+  nombre       String
+  direccion    String
+  departamento String
+  ciudad       String
+  usuarioId    Int
+  cantidad     String
+  estado       Boolean    @default(true)
+  cultivos     Cultivo[]  @relation("FincaCultivos")
+  usuario      Usuario   @relation("UsuarioFincas", fields: [usuarioId], references: [id])
+}
+
+model Imagen {
+  id                 Int      @id @default(autoincrement())
+  nombre             String
+  url                String
+  fecha_finalizacion DateTime @default(now())
+  estado             Boolean  @default(true)
+  cultivoId          Int
+  cultivo            Cultivo  @relation("CultivoImagenes", fields: [cultivoId], references: [id])
+}
+
+model Categoria {
+  id     Int     @id @default(autoincrement())
+  nombre String
+  estado Boolean @default(true)
+}
+
+model Slider {
+  id              Int      @id @default(autoincrement())
+  nombre          String
+  url             String
+  fecha_creacion  DateTime @default(now())
+  estado          Boolean  @default(true)
+}
