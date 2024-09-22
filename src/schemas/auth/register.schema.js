@@ -67,5 +67,6 @@ export const registerSchema = Joi.object({
     .messages({
       'string.empty': 'La ciudad es obligatoria.',
       'any.required': 'La ciudad es obligatoria.'
-    })
+    }),
+  roles:Joi.optional(),
 });
